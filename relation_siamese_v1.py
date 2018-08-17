@@ -47,10 +47,10 @@ def flatten(x):
 ###############################################
 #Hyperparameters
 ###############################################
-IMG_SIZE = 26
-HIDDEN_LAYER_SIZE = 4*4*64
-FC_SIZE = 6*6*64
-LEARNING_RATE = 0.00001
+IMG_SIZE = 32
+HIDDEN_LAYER_SIZE = 1*1*64
+FC_SIZE = 2*2*64
+LEARNING_RATE = 0.001
 
 ###############################################
 #Function to make optimizer
@@ -106,7 +106,7 @@ print("Building Transform")
 transform = T.Compose([
                 T.Grayscale(),
                 T.CenterCrop(104),
-                T.Resize((26,26),interpolation=1),
+                T.Resize((IMG_SIZE,IMG_SIZE),interpolation=1),
                 T.ToTensor(),
                 T.Normalize([0.924562], [0.264097])
             ])
@@ -217,11 +217,11 @@ print('using device:', device)
 print("Building CNNs")
 
 class SiameseNetwork(nn.Module):
-    def __init__(self, in_channel=1, channel_num=64, FC_num = 2304, hidden_num=1024, output_size=1):
+    def __init__(self, in_channel=1, channel_num=64, FC_num=1024, hidden_num=256, output_size=1):
         super().__init__()
 
         self.layer1 = nn.Sequential(
-                        nn.Conv2d(in_channel,channel_num,kernel_size=3,padding=0),
+                        nn.Conv2d(in_channel,channel_num,kernel_size=3,padding=1),
                         nn.BatchNorm2d(channel_num, momentum=1, affine=True),
                         nn.ReLU(),
                         nn.MaxPool2d(2))
@@ -233,19 +233,20 @@ class SiameseNetwork(nn.Module):
         self.layer3 = nn.Sequential(
                         nn.Conv2d(channel_num,channel_num,kernel_size=3,padding=1),
                         nn.BatchNorm2d(channel_num, momentum=1, affine=True),
-                        nn.ReLU())
+                        nn.ReLU(),
+                        nn.MaxPool2d(2))
         self.layer4 = nn.Sequential(
                         nn.Conv2d(channel_num,channel_num,kernel_size=3,padding=1),
                         nn.BatchNorm2d(channel_num, momentum=1, affine=True),
-                        nn.ReLU())
-        # output is 6x6x64 after conv section
+                        nn.ReLU(),
+                        nn.MaxPool2d(2))
+        # output is 2x2x64 after conv section
 
-        # input is 6x6x64 = 2304, output is hidden layer 1024
-        # chose hardtanh to possibly discern between negative and positive
-        # before feeding it to the absolute difference function
+        # input is 2x2x64 = 256, output hidden layer
+        # use sigmoid for the FC layers
         self.fc1 = nn.Sequential(
                     nn.Linear(FC_num,hidden_num),
-                    nn.Hardtanh())
+                    nn.Sigmoid())
 
         # only do last FC layer after difference function
         # input is hidden layer, output is 1 
