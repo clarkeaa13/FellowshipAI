@@ -336,8 +336,8 @@ class RelationNetwork(nn.Module):
 #all images were dumped into two folders for training and testing
 #deleted a training class with only 19 images due to an extraction error
 print("building datasets...")
-omni_train = dset.ImageFolder(root='.\\training_images\\', transform=transform)
-omni_test  = dset.ImageFolder(root='.\\testing_images\\', transform=transform)
+omni_train = dset.ImageFolder(root='./training_images/', transform=transform)
+omni_test  = dset.ImageFolder(root='./testing_images/', transform=transform)
 
 ###############################################
 #Function for testing the model
@@ -376,8 +376,8 @@ def check_accuracy(sample_loader, query_loader, model):
 
 def train_SN(model, optimizer, episodes=1):
     """Train using siamese network"""
-    PATH = '.\\SN_Training\\siamese_try'
-    PATH2 = '.\\SN_Training\\siamese_draft'
+    PATH = './SN_Training/siamese_try'
+    PATH2 = './SN_Training/siamese_draft'
     model = model.to(device=device)  # move the model parameters to CPU/GPU
     for episode in range(episodes):
         model.train() # set to train mode
